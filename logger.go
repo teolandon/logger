@@ -15,76 +15,96 @@ import (
 )
 
 var (
-	enabled  bool = false
-	file     *os.File
-	logger   *log.Logger
-	tabLevel int
+	logger *Logger
+
+	logPath     string
+	programName string
+
+	enabled bool = false
 )
 
-func Init() {
-	if enabled {
-		return
-	}
+func Init(progName string) {
+	programName = progName
 
 	usr, err := user.Current()
 	if err != nil {
 		fmt.Println("Logger couldn't get user")
-		return
+		panic(err)
 	}
 
 	t := time.Now()
 
-	filename := fmt.Sprintf("hanoi_%04d-%02d-%02d_%02d-%02d-%02d.log",
+	currRun := fmt.Sprintf("%04d-%02d-%02d_%02d-%02d-%02d",
 		t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), t.Second())
 
-	err = os.Mkdir(filepath.Join(usr.HomeDir, "logs"), 0777)
+	logPath = filepath.Join(usr.HomeDir, "logs", programName, currRun)
+
+	err = os.Mkdir(logPath, 0777)
 	if !os.IsExist(err) {
-		return
+		panic(err)
 	}
 
-	file, err = os.Create(filepath.Join(usr.HomeDir, "logs", filename))
-	if err != nil {
-		fmt.Println("Logger couldn't create file")
-		return
-	}
-
-	logger = log.New(file, "", log.LstdFlags|log.Lshortfile)
+	logger = New("std")
 	enabled = true
 }
 
-func IncTab() {
-	SetTab(tabLevel + 1)
+func timestampedFile(logName string) (*os.File, error) {
+	file, err := os.Create(filepath.Join(logPath, logName+".log"))
+
+	if err != nil {
+		fmt.Println("Logger couldn't create file")
+		return nil, err
+	}
+
+	return file, nil
 }
 
-func DecTab() {
-	SetTab(tabLevel - 1)
+type Logger struct {
+	gologger *log.Logger
+	tabLevel int
 }
 
-func SetTab(i int) {
+func New(filename string) *Logger {
+	file, err := timestampedFile(filename)
+	if err != nil {
+		panic(err)
+	}
+
+	gologger := log.New(file, "", log.LstdFlags|log.Lshortfile)
+
+	return &Logger{gologger, 0}
+}
+
+func (l *Logger) IncTab() {
+	l.SetTab(l.tabLevel + 1)
+}
+
+func (l *Logger) DecTab() {
+	l.SetTab(l.tabLevel - 1)
+}
+
+func (l *Logger) SetTab(i int) {
 	if i < 0 {
-		tabLevel = 0
+		l.tabLevel = 0
 	} else {
-		tabLevel = i
+		l.tabLevel = i
 	}
 }
 
-func Log(s ...interface{}) {
-	if enabled {
-		tabs := getTabs()
-		str := fmt.Sprintln(tabs, s)
-		logger.Output(2, str)
-	}
+func (l *Logger) TabLevel() int {
+	return l.tabLevel
 }
 
-func getTabs() string {
-	slice := make([]rune, tabLevel)
+func (l *Logger) Log(s ...interface{}) {
+	tabs := l.tabs()
+	str := fmt.Sprintln(tabs, s)
+	l.gologger.Output(2, str)
+}
+
+func (l *Logger) tabs() string {
+	slice := make([]rune, l.tabLevel)
 	for i := range slice {
 		slice[i] = '\t'
 	}
 	return string(slice)
-}
-
-func Close() {
-	enabled = false
-	file.Close()
 }
