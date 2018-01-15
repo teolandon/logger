@@ -20,9 +20,17 @@ var (
 	logPath     string
 	programName string
 
-	enabled bool = false
+	enabled = false
 )
 
+// Init has to be called before any logger can be initialized,
+// including the default logger. The parameter progName specifies
+// the name of the program to be ran, so as to place the log
+// files in the correct folder.
+//
+// Init initializes the default logger to the current timestamp
+// and given program name, pointing to the file std.log, the standard
+// logging file.
 func Init(progName string) {
 	programName = progName
 
@@ -87,7 +95,14 @@ func Println(v ...interface{}) {
 	logger.print(fmt.Sprintln(v), 2)
 }
 
-func timestampedFile(logName string) (*os.File, error) {
+// newLogFile creates and returns a new log file with the given
+// logName plus the ".log" extension, inside the current log path
+// given by the timestamp of the initialization of the package and
+// the name of the program that is being logged.
+//
+// The error returned can be any of the errors that os.Create()
+// returns, returned when the file creation fails.
+func newLogFile(logName string) (*os.File, error) {
 	file, err := os.Create(filepath.Join(logPath, logName+".log"))
 
 	if err != nil {
@@ -98,17 +113,44 @@ func timestampedFile(logName string) (*os.File, error) {
 	return file, nil
 }
 
+// A Logger can be used to log messages to a file using the standard Go Logger
+// methods. Multiple loggers can be present during a program's run. In fact,
+// the intended usage is to group log messages with similar purposes in
+// different loggers, so as to avoid clutter and better organize logs.
+//
+// Furthermore, a tab level can be specified to indent lines. Common
+// usage is increasing the tab level before calling an important function, and
+// decreasing it back to the previous level after it returns:
+//
+//   // previous code
+//
+//   logger.Println("Calling functionThatLogsActions")
+//   logger.IncTab()
+//   functionThatLogsActions()
+//   logger.DecTab()
+//
+//   // rest of the code
+//
+// It's also possible to increase the tab level at the beginning of all
+// functions and defer decreasing it, but this can cause excessive
+// indentation, and is not recommended.
+//
+// The tab characted can be set to any character to provide better visibility
+// of indented log entries.
 type Logger struct {
 	gologger *log.Logger
 	tabLevel int
 }
 
+// New initializes and returns a new Logger pointing to a file located in
+// the current timestamped directory, with the given filename and the
+// ".log" extension.
 func New(filename string) *Logger {
 	if !enabled {
 		return nil
 	}
 
-	file, err := timestampedFile(filename)
+	file, err := newLogFile(filename)
 	if err != nil {
 		panic(err)
 	}
@@ -118,14 +160,18 @@ func New(filename string) *Logger {
 	return &Logger{gologger, 0}
 }
 
+// IncTab increases the indent level of the Logger l by 1 tab character.
 func (l *Logger) IncTab() {
 	l.SetTab(l.tabLevel + 1)
 }
 
+// DecTab decreases the indent level of the Logger l by 1 tab character.
 func (l *Logger) DecTab() {
 	l.SetTab(l.tabLevel - 1)
 }
 
+// SetTab sets the indent level of the Logger l to i tab characters. The given
+// number i has to be non-negative.
 func (l *Logger) SetTab(i int) {
 	if i < 0 {
 		l.tabLevel = 0
@@ -134,14 +180,9 @@ func (l *Logger) SetTab(i int) {
 	}
 }
 
+// TabLevel returns the current indentation level of the Logger l.
 func (l *Logger) TabLevel() int {
 	return l.tabLevel
-}
-
-func (l *Logger) Log(s ...interface{}) {
-	tabs := l.tabs()
-	str := fmt.Sprintln(tabs, s)
-	l.gologger.Output(2, str)
 }
 
 func (l *Logger) tabs() string {
@@ -199,5 +240,5 @@ func (l *Logger) panic(v string, calldepth int) {
 }
 func (l *Logger) print(v string, calldepth int) {
 	str := fmt.Sprint(v)
-	l.gologger.Output(calldepth-1, str)
+	l.gologger.Output(calldepth+1, str)
 }
