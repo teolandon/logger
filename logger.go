@@ -64,7 +64,7 @@ func Fatal(v ...interface{}) {
 }
 
 func Fatalf(format string, v ...interface{}) {
-	logger.fatal(fmt.Sprintf(format, v), 2)
+	logger.fatal(fmt.Sprintf(format, v...), 2)
 }
 
 func Fatalln(v ...interface{}) {
@@ -76,7 +76,7 @@ func Panic(v ...interface{}) {
 }
 
 func Panicf(format string, v ...interface{}) {
-	logger.panic(fmt.Sprintf(format, v), 2)
+	logger.panic(fmt.Sprintf(format, v...), 2)
 }
 
 func Panicln(v ...interface{}) {
@@ -88,7 +88,9 @@ func Print(v ...interface{}) {
 }
 
 func Printf(format string, v ...interface{}) {
-	logger.print(fmt.Sprintf(format, v), 2)
+	fmt.Println("Format string: ", format)
+	fmt.Println("Arguments:  ", v)
+	logger.print(fmt.Sprintf(format, v...), 2)
 }
 
 func Println(v ...interface{}) {
@@ -210,7 +212,7 @@ func (l *Logger) Panic(v ...interface{}) {
 }
 
 func (l *Logger) Panicf(format string, v ...interface{}) {
-	l.panic(fmt.Sprintf(format, v), 2)
+	l.panic(fmt.Sprintf(format, v...), 2)
 }
 
 func (l *Logger) Panicln(v ...interface{}) {
@@ -222,7 +224,7 @@ func (l *Logger) Print(v ...interface{}) {
 }
 
 func (l *Logger) Printf(format string, v ...interface{}) {
-	l.print(fmt.Sprintf(format, v), 2)
+	l.print(fmt.Sprintf(format, v...), 2)
 }
 
 func (l *Logger) Println(v ...interface{}) {
