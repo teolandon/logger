@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -26,13 +27,17 @@ var (
 // including the default logger. The parameter progName specifies
 // the name of the program to be ran, so as to place the log
 // files in the correct folder.
-func Init(progName string) {
+func Init(progName string) error {
+	if enabled {
+		return errors.New("logger already initialized")
+	}
+
 	programName = progName
 
 	usr, err := user.Current()
 	if err != nil {
 		fmt.Println("Logger couldn't get user")
-		panic(err)
+		return err
 	}
 
 	t := time.Now()
@@ -44,12 +49,14 @@ func Init(progName string) {
 
 	err = os.MkdirAll(logPath, 0777)
 	if err != nil && !os.IsExist(err) {
-		panic(err)
+		return err
 	}
 
 	enabled = true
 
-	stdlogger = New("std")
+	stdlogger, err = New("std")
+
+	return err
 }
 
 /** Standard logger wrappers **/
@@ -175,19 +182,19 @@ type Logger struct {
 // New initializes and returns a new Logger pointing to a file located in
 // the current timestamped directory, with the given filename and the
 // ".log" extension.
-func New(filename string) *Logger {
+func New(filename string) (*Logger, error) {
 	if !enabled {
-		return nil
+		return nil, errors.New("")
 	}
 
 	file, err := newLogFile(filename)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	gologger := log.New(file, "", log.LstdFlags|log.Lshortfile)
 
-	return &Logger{gologger, 0}
+	return &Logger{gologger, 0}, nil
 }
 
 // IncTab increases the indent level of the Logger l by 1 tab character.
@@ -215,6 +222,8 @@ func (l *Logger) TabLevel() int {
 	return l.tabLevel
 }
 
+// tabs is a helper function that returns the indentation that
+// is to be appended to a log message of a Logger l.
 func (l *Logger) tabs() string {
 	slice := make([]rune, l.tabLevel)
 	for i := range slice {
@@ -289,5 +298,8 @@ func (l *Logger) panic(v string, calldepth int) {
 // Preserves correct call depth.
 func (l *Logger) print(v string, calldepth int) {
 	str := fmt.Sprint(v)
-	l.gologger.Output(calldepth+1, str)
+	err := l.gologger.Output(calldepth+1, str)
+	if err != nil {
+		fmt.Println("Warning: logger returning error on Output call.")
+	}
 }
