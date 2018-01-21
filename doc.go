@@ -4,10 +4,10 @@ standard log package, to provide several features such as indentation and
 consistent default log file formatting.
 
 Due to its nature as a wrapper of the standart Go log package, it's stuctured
-very similarly, complete with a standart logger that is accessible through
-the package-level functions, as well as a Logger type that can be used to
-create more loggers that point to different files and can be configured
-differently, so as to structure the logs better.
+very similarly, complete with a standard logger that is accessible through
+the package-level functions, which writes to std.log, as well as a Logger type
+that can be used to create more loggers that point to different files and can
+be configured differently, so as to structure the logs better.
 
 Package logger produces log folders in a "log" directory located in the running
 user's home directory. Inside the "log" directory exist folders describing the
