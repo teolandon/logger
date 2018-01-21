@@ -49,7 +49,7 @@ import (
 )
 
 var (
-	logger *Logger
+	stdlogger *Logger
 
 	logPath     string
 	programName string
@@ -88,45 +88,66 @@ func Init(progName string) {
 
 	enabled = true
 
-	logger = New("std")
+	stdlogger = New("std")
 }
 
-/** Logging wrappers **/
+/** Standard logger wrappers **/
+
+// IncTab increases the indent level of the standard logger by 1 tab character.
+func IncTab() {
+	stdlogger.IncTab()
+}
+
+// DecTab decreases the indent level of the standard logger by 1 tab character.
+func DecTab() {
+	stdlogger.DecTab()
+}
+
+// SetTab sets the indent level of the standard logger to i tab characters. The given
+// number i has to be non-negative.
+func SetTab(i int) {
+	stdlogger.SetTab(i)
+}
+
+// TabLevel returns the current indentation level of the standard logger.
+func TabLevel() int {
+	return stdlogger.tabLevel
+}
 
 // Fatal is equivalent to Print() followed by a call to os.Exit(1).
 func Fatal(v ...interface{}) {
-	logger.fatal(fmt.Sprint(v), 2)
+	stdlogger.fatal(fmt.Sprint(v), 2)
 }
 
 // Fatalf is equivalent to Printf() followed by a call to os.Exit(1).
 func Fatalf(format string, v ...interface{}) {
-	logger.fatal(fmt.Sprintf(format, v...), 2)
+	stdlogger.fatal(fmt.Sprintf(format, v...), 2)
 }
 
 // Fatalln is equivalent to Println() followed by a call to os.Exit(1).
 func Fatalln(v ...interface{}) {
-	logger.fatal(fmt.Sprintln(v...), 2)
+	stdlogger.fatal(fmt.Sprintln(v...), 2)
 }
 
 // Panic is equivalent to Print() followed by a call to panic().
 func Panic(v ...interface{}) {
-	logger.panic(fmt.Sprint(v), 2)
+	stdlogger.panic(fmt.Sprint(v), 2)
 }
 
 // Panicf is equivalent to Printf() followed by a call to panic().
 func Panicf(format string, v ...interface{}) {
-	logger.panic(fmt.Sprintf(format, v...), 2)
+	stdlogger.panic(fmt.Sprintf(format, v...), 2)
 }
 
 // Panicln is equivalent to Println() followed by a call to panic().
 func Panicln(v ...interface{}) {
-	logger.panic(fmt.Sprintln(v...), 2)
+	stdlogger.panic(fmt.Sprintln(v...), 2)
 }
 
 // Print calls Output() to print to the standart logger. Arguments are
 // handled in the manner of fmt.Print()
 func Print(v ...interface{}) {
-	logger.print(fmt.Sprint(v), 2)
+	stdlogger.print(fmt.Sprint(v), 2)
 }
 
 // Printf calls Output() to print to the standart logger. Arguments are
@@ -134,13 +155,13 @@ func Print(v ...interface{}) {
 func Printf(format string, v ...interface{}) {
 	fmt.Println("Format string: ", format)
 	fmt.Println("Arguments:  ", v)
-	logger.print(fmt.Sprintf(format, v...), 2)
+	stdlogger.print(fmt.Sprintf(format, v...), 2)
 }
 
 // Println calls Output() to print to the standart logger. Arguments are
 // handled in the manner of fmt.Println()
 func Println(v ...interface{}) {
-	logger.print(fmt.Sprintln(v...), 2)
+	stdlogger.print(fmt.Sprintln(v...), 2)
 }
 
 // newLogFile creates and returns a new log file with the given
