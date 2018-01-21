@@ -93,40 +93,52 @@ func Init(progName string) {
 
 /** Logging wrappers **/
 
+// Fatal is equivalent to Print() followed by a call to os.Exit(1).
 func Fatal(v ...interface{}) {
 	logger.fatal(fmt.Sprint(v), 2)
 }
 
+// Fatalf is equivalent to Printf() followed by a call to os.Exit(1).
 func Fatalf(format string, v ...interface{}) {
 	logger.fatal(fmt.Sprintf(format, v...), 2)
 }
 
+// Fatalln is equivalent to Println() followed by a call to os.Exit(1).
 func Fatalln(v ...interface{}) {
 	logger.fatal(fmt.Sprintln(v...), 2)
 }
 
+// Panic is equivalent to Print() followed by a call to panic().
 func Panic(v ...interface{}) {
 	logger.panic(fmt.Sprint(v), 2)
 }
 
+// Panicf is equivalent to Printf() followed by a call to panic().
 func Panicf(format string, v ...interface{}) {
 	logger.panic(fmt.Sprintf(format, v...), 2)
 }
 
+// Panicln is equivalent to Println() followed by a call to panic().
 func Panicln(v ...interface{}) {
 	logger.panic(fmt.Sprintln(v...), 2)
 }
 
+// Print calls Output() to print to the standart logger. Arguments are
+// handled in the manner of fmt.Print()
 func Print(v ...interface{}) {
 	logger.print(fmt.Sprint(v), 2)
 }
 
+// Printf calls Output() to print to the standart logger. Arguments are
+// handled in the manner of fmt.Printf()
 func Printf(format string, v ...interface{}) {
 	fmt.Println("Format string: ", format)
 	fmt.Println("Arguments:  ", v)
 	logger.print(fmt.Sprintf(format, v...), 2)
 }
 
+// Println calls Output() to print to the standart logger. Arguments are
+// handled in the manner of fmt.Println()
 func Println(v ...interface{}) {
 	logger.print(fmt.Sprintln(v...), 2)
 }
@@ -229,51 +241,70 @@ func (l *Logger) tabs() string {
 	return string(slice)
 }
 
+// Fatal is equivalent to l.Print() followed by a call to os.Exit(1).
 func (l *Logger) Fatal(v ...interface{}) {
 	l.fatal(fmt.Sprint(v), 2)
 }
 
+// Fatalf is equivalent to l.Printf() followed by a call to os.Exit(1).
 func (l *Logger) Fatalf(format string, v ...interface{}) {
 	l.fatal(fmt.Sprintf(format, v), 2)
 }
 
+// Fatalln is equivalent to l.Println() followed by a call to os.Exit(1).
 func (l *Logger) Fatalln(v ...interface{}) {
 	l.fatal(fmt.Sprintln(v...), 2)
 }
 
+// Panic is equivalent to l.Print() followed by a call to panic().
 func (l *Logger) Panic(v ...interface{}) {
 	l.panic(fmt.Sprint(v), 2)
 }
 
+// Panicf is equivalent to l.Printf() followed by a call to panic().
 func (l *Logger) Panicf(format string, v ...interface{}) {
 	l.panic(fmt.Sprintf(format, v...), 2)
 }
 
+// Panicln is equivalent to l.Println() followed by a call to panic().
 func (l *Logger) Panicln(v ...interface{}) {
 	l.panic(fmt.Sprintln(v...), 2)
 }
 
+// Print calls l.Output to print to the logger. Arguments are handled in
+// the manner of fmt.Print.
 func (l *Logger) Print(v ...interface{}) {
 	l.print(fmt.Sprint(v), 2)
 }
 
+// Printf calls l.Output to print to the logger. Arguments are handled in
+// the manner of fmt.Printf.
 func (l *Logger) Printf(format string, v ...interface{}) {
 	l.print(fmt.Sprintf(format, v...), 2)
 }
 
+// Println calls l.Output to print to the logger. Arguments are handled in
+// the manner of fmt.Println.
 func (l *Logger) Println(v ...interface{}) {
 	l.print(fmt.Sprintln(v...), 2)
 }
 
+// fatal is a helper method for all Fatal[f|ln] methods to call. Preserves
+// correct call depth.
 func (l *Logger) fatal(v string, calldepth int) {
 	l.print(v, calldepth+1)
 	os.Exit(1)
 }
 
+// panic is a helper method for all Panic[f|ln] methods to call. Preserves
+// correct call depth.
 func (l *Logger) panic(v string, calldepth int) {
 	l.print(v, calldepth+1)
 	panic(v)
 }
+
+// print is a helper method for all Print[f|ln] methods and others to call.
+// Preserves correct call depth.
 func (l *Logger) print(v string, calldepth int) {
 	str := fmt.Sprint(v)
 	l.gologger.Output(calldepth+1, str)
