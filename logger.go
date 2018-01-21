@@ -68,7 +68,7 @@ func Fatalf(format string, v ...interface{}) {
 }
 
 func Fatalln(v ...interface{}) {
-	logger.fatal(fmt.Sprintln(v), 2)
+	logger.fatal(fmt.Sprintln(v...), 2)
 }
 
 func Panic(v ...interface{}) {
@@ -80,7 +80,7 @@ func Panicf(format string, v ...interface{}) {
 }
 
 func Panicln(v ...interface{}) {
-	logger.panic(fmt.Sprintln(v), 2)
+	logger.panic(fmt.Sprintln(v...), 2)
 }
 
 func Print(v ...interface{}) {
@@ -94,7 +94,7 @@ func Printf(format string, v ...interface{}) {
 }
 
 func Println(v ...interface{}) {
-	logger.print(fmt.Sprintln(v), 2)
+	logger.print(fmt.Sprintln(v...), 2)
 }
 
 // newLogFile creates and returns a new log file with the given
@@ -204,7 +204,7 @@ func (l *Logger) Fatalf(format string, v ...interface{}) {
 }
 
 func (l *Logger) Fatalln(v ...interface{}) {
-	l.fatal(fmt.Sprintln(v), 2)
+	l.fatal(fmt.Sprintln(v...), 2)
 }
 
 func (l *Logger) Panic(v ...interface{}) {
@@ -216,7 +216,7 @@ func (l *Logger) Panicf(format string, v ...interface{}) {
 }
 
 func (l *Logger) Panicln(v ...interface{}) {
-	l.panic(fmt.Sprintln(v), 2)
+	l.panic(fmt.Sprintln(v...), 2)
 }
 
 func (l *Logger) Print(v ...interface{}) {
@@ -228,7 +228,7 @@ func (l *Logger) Printf(format string, v ...interface{}) {
 }
 
 func (l *Logger) Println(v ...interface{}) {
-	l.print(fmt.Sprintln(v), 2)
+	l.print(fmt.Sprintln(v...), 2)
 }
 
 func (l *Logger) fatal(v string, calldepth int) {
