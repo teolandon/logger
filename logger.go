@@ -11,12 +11,11 @@ import (
 )
 
 var (
-	stdlogger *Logger
-
+	stdlogger   *Logger
 	logPath     string
 	programName string
-
-	enabled = false
+	enabled     = false
+	fileSet     = make(set)
 )
 
 // Init initializes the default logger to the current timestamp
@@ -184,7 +183,11 @@ type Logger struct {
 // ".log" extension.
 func New(filename string) (*Logger, error) {
 	if !enabled {
-		return nil, errors.New("")
+		return nil, errors.New("Logger not initialized, unable to create new Logger object.")
+	}
+
+	if fileSet.contains(filename) {
+		return nil, errors.New("Another logger is already logging to that file")
 	}
 
 	file, err := newLogFile(filename)
@@ -193,6 +196,8 @@ func New(filename string) (*Logger, error) {
 	}
 
 	gologger := log.New(file, "", log.LstdFlags|log.Lshortfile)
+
+	fileSet.add(filename)
 
 	return &Logger{gologger, 0}, nil
 }
@@ -298,8 +303,5 @@ func (l *Logger) panic(v string, calldepth int) {
 // Preserves correct call depth.
 func (l *Logger) print(v string, calldepth int) {
 	str := fmt.Sprint(v)
-	err := l.gologger.Output(calldepth+1, str)
-	if err != nil {
-		fmt.Println("Warning: logger returning error on Output call.")
-	}
+	l.gologger.Output(calldepth+1, str)
 }
