@@ -146,7 +146,20 @@ func newLogFile(logName string) (*os.File, error) {
 		return nil, err
 	}
 
+	if containsSlashes(logName) {
+		return nil, errors.New("Log file names are not allowed to contain slashes")
+	}
+
 	return file, nil
+}
+
+func containsSlashes(s string) bool {
+	for i := range s {
+		if s[i] == '\\' || s[i] == '/' {
+			return true
+		}
+	}
+	return false
 }
 
 // A Logger can be used to log messages to a file using the standard Go Logger
@@ -183,7 +196,7 @@ type Logger struct {
 // ".log" extension.
 func New(filename string) (*Logger, error) {
 	if !enabled {
-		return nil, errors.New("Logger not initialized, unable to create new Logger object.")
+		return nil, errors.New("logger not initialized, unable to create new Logger object.")
 	}
 
 	if fileSet.contains(filename) {
@@ -303,5 +316,8 @@ func (l *Logger) panic(v string, calldepth int) {
 // Preserves correct call depth.
 func (l *Logger) print(v string, calldepth int) {
 	str := fmt.Sprint(v)
-	l.gologger.Output(calldepth+1, str)
+	err := l.gologger.Output(calldepth+1, str)
+	if err != nil {
+		fmt.Println("Warning: logger returning error on Output call.")
+	}
 }
