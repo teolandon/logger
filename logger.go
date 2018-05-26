@@ -196,7 +196,7 @@ type Logger struct {
 // ".log" extension.
 func New(filename string) (*Logger, error) {
 	if !enabled {
-		return nil, errors.New("logger not initialized, unable to create new Logger object.")
+		return nil, errors.New("Cannot initialize logger object, package not enabled")
 	}
 
 	if fileSet.contains(filename) {
@@ -208,7 +208,7 @@ func New(filename string) (*Logger, error) {
 		return nil, err
 	}
 
-	gologger := log.New(file, "", log.LstdFlags|log.Lshortfile)
+	gologger := log.New(file, "", 0)
 
 	fileSet.add(filename)
 
@@ -217,17 +217,26 @@ func New(filename string) (*Logger, error) {
 
 // IncTab increases the indent level of the Logger l by 1 tab character.
 func (l *Logger) IncTab() {
+	if l == nil {
+		return
+	}
 	l.SetTab(l.tabLevel + 1)
 }
 
 // DecTab decreases the indent level of the Logger l by 1 tab character.
 func (l *Logger) DecTab() {
+	if l == nil {
+		return
+	}
 	l.SetTab(l.tabLevel - 1)
 }
 
 // SetTab sets the indent level of the Logger l to i tab characters. The given
 // number i has to be non-negative.
 func (l *Logger) SetTab(i int) {
+	if l == nil {
+		return
+	}
 	if i < 0 {
 		l.tabLevel = 0
 	} else {
@@ -237,12 +246,18 @@ func (l *Logger) SetTab(i int) {
 
 // TabLevel returns the current indentation level of the Logger l.
 func (l *Logger) TabLevel() int {
+	if l == nil {
+		return 0
+	}
 	return l.tabLevel
 }
 
 // tabs is a helper function that returns the indentation that
 // is to be appended to a log message of a Logger l.
 func (l *Logger) tabs() string {
+	if l == nil {
+		return ""
+	}
 	slice := make([]rune, l.tabLevel)
 	for i := range slice {
 		slice[i] = '\t'
@@ -301,6 +316,9 @@ func (l *Logger) Println(v ...interface{}) {
 // fatal is a helper method for all Fatal[f|ln] methods to call. Preserves
 // correct call depth.
 func (l *Logger) fatal(v string, calldepth int) {
+	if l == nil {
+		return
+	}
 	l.print(v, calldepth+1)
 	os.Exit(1)
 }
@@ -308,6 +326,9 @@ func (l *Logger) fatal(v string, calldepth int) {
 // panic is a helper method for all Panic[f|ln] methods to call. Preserves
 // correct call depth.
 func (l *Logger) panic(v string, calldepth int) {
+	if l == nil {
+		return
+	}
 	l.print(v, calldepth+1)
 	panic(v)
 }
@@ -315,6 +336,14 @@ func (l *Logger) panic(v string, calldepth int) {
 // print is a helper method for all Print[f|ln] methods and others to call.
 // Preserves correct call depth.
 func (l *Logger) print(v string, calldepth int) {
+	if l == nil {
+		return
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Println("Recovered in f", r)
+		}
+	}()
 	str := fmt.Sprint(v)
 	err := l.gologger.Output(calldepth+1, str)
 	if err != nil {
